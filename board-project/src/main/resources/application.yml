@@ -1,0 +1,49 @@
+spring:
+  profiles:
+    active: local
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/board_db
+    username: postgres
+    password: password
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://db:5432/board_db
+    username: postgres
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:postgresql://db:5432/board_db
+    username: postgres
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: redis
+      port: 6379

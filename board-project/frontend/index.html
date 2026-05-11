@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단 게시판 (Vue3 CDN)</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        nav { margin-bottom: 20px; background: #f4f4f4; padding: 10px; }
+        nav a { margin-right: 15px; cursor: pointer; text-decoration: underline; color: blue; }
+        .post { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .active { font-weight: bold; color: black; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>{{ currentBoardTitle }}</h1>
+        <nav>
+            <a @click="fetchBoard('notice')" :class="{ active: currentBoard === 'notice' }">공지사항</a>
+            <a @click="fetchBoard('free')" :class="{ active: currentBoard === 'free' }">자유게시판</a>
+            <a @click="fetchBoard('qna')" :class="{ active: currentBoard === 'qna' }">Q&A</a>
+        </nav>
+
+        <div v-if="loading">로딩 중...</div>
+        <div v-else>
+            <div v-for="post in posts" :key="post.id" class="post">
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.content }}</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const posts = ref([]);
+                const currentBoard = ref('notice');
+                const currentBoardTitle = ref('공지사항');
+                const loading = ref(false);
+
+                // API URL을 파라미터에서 가져오거나 기본값 사용
+                const urlParams = new URLSearchParams(window.location.search);
+                const apiBaseUrl = urlParams.get('api_url') || 'http://localhost:8080/api';
+
+                const fetchBoard = async (boardType) => {
+                    loading.value = true;
+                    currentBoard.value = boardType;
+                    try {
+                        const response = await axios.get(`${apiBaseUrl}/boards/${boardType}`);
+                        posts.value = response.data.posts;
+                        currentBoardTitle.value = response.data.title;
+                    } catch (error) {
+                        console.error('API 호출 에러:', error);
+                        alert('데이터를 불러오는데 실패했습니다.');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                onMounted(() => {
+                    fetchBoard('notice');
+                });
+
+                return { posts, currentBoard, currentBoardTitle, loading, fetchBoard };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
